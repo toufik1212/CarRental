@@ -1,0 +1,27 @@
+﻿@model CarRental.Models.Rental
+
+@{
+    ViewData["Title"] = "Pengembalian Mobil";
+}
+
+<h2>Pengembalian Mobil</h2>
+<hr />
+
+<div class="card p-4">
+    <h4>@Model.Car.Model (@Model.Car.PlatNo)</h4>
+    <p><strong>Tanggal Sewa:</strong> @Model.RentDate?.ToString("dd/MM/yyyy HH:mm")</p>
+    <p><strong>Tanggal Rencana Kembali:</strong> @Model.ReturnDate?.ToString("dd/MM/yyyy HH:mm")</p>
+    <p><strong>Total Harga Awal:</strong> Rp @Model.TotalPrice?.ToString("N0")</p>
+
+    <form asp-action="ReturnCarPost" method="post">
+        <input type="hidden" name="id" value="@Model.Id" />
+
+        <div class="form-group mb-3">
+            <label>Tanggal Pengembalian Aktual</label>
+            <input type="datetime-local" name="ActualReturn" class="form-control" required />
+        </div>
+
+        <button type="submit" class="btn btn-success">Simpan Pengembalian</button>
+        <a asp-action="Index" class="btn btn-secondary">Batal</a>
+    </form>
+</div>

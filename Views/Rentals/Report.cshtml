@@ -1,0 +1,76 @@
+﻿@model IEnumerable<CarRental.Models.Rental>
+
+@{
+    ViewData["Title"] = "Laporan Transaksi";
+}
+
+<h2>Laporan Transaksi</h2>
+<hr />
+
+<form method="get" asp-action="Report" class="row g-3 mb-4">
+    <div class="col-md-3">
+        <label>Dari Tanggal</label>
+        <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate" />
+    </div>
+    <div class="col-md-3">
+        <label>Sampai Tanggal</label>
+        <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate" />
+    </div>
+    <div class="col-md-3 align-self-end">
+        <button type="submit" class="btn btn-primary">Tampilkan</button>
+        <a asp-action="Report" class="btn btn-secondary">Reset</a>
+    </div>
+    <div class="col-md-3 align-self-end">
+       
+    </div>
+    <div class="col-md-3 align-self-end">
+        <a asp-action="ExportToExcel" asp-route-startDate="@ViewBag.StartDate" asp-route-endDate="@ViewBag.EndDate" class="btn btn-success">Export Excel</a>
+        <a asp-action="ExportToPdf" asp-route-startDate="@ViewBag.StartDate" asp-route-endDate="@ViewBag.EndDate" class="btn btn-danger">Export PDF</a>
+    </div>
+</form>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>No</th>
+            <th>Mobil</th>
+            <th>Penyewa</th>
+            <th>Tanggal Sewa</th>
+            <th>Tanggal Kembali</th>
+            <th>Harga Total (Rp)</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int no = 1;
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@no++</td>
+                    <td>@item.Car?.Model</td>
+                    <td>@item.UserPass?.Username</td>
+                    <td>@item.RentDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@item.ReturnDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@item.TotalPrice?.ToString("N0")</td>
+                    <td>
+                        @if (item.Status == "Disewa")
+                        {
+                            <span class="badge bg-warning text-dark">Disewa</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Selesai</span>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+    <tfoot>
+        <tr class="table-secondary">
+            <td colspan="5" class="text-end"><strong>Total Pendapatan:</strong></td>
+            <td colspan="2"><strong>Rp @ViewBag.TotalPendapatan.ToString("N0")</strong></td>
+        </tr>
+    </tfoot>
+</table>

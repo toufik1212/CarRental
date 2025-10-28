@@ -1,0 +1,116 @@
+﻿@model CarRental.Models.Rental
+
+@{
+    ViewData["Title"] = "Create Rental";
+}
+
+<h2>Sewa Mobil</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- Pilihan Mobil -->
+            <div class="form-group mb-3">
+                <label asp-for="CarId" class="control-label"></label>
+                <select asp-for="CarId" asp-items="ViewBag.CarId" class="form-control" id="carSelect" onchange="updateHarga()"></select>
+                <span asp-validation-for="CarId" class="text-danger"></span>
+            </div>
+
+            <!-- Tanggal Mulai -->
+            <div class="form-group mb-3">
+                <label asp-for="RentDate" class="control-label"></label>
+                <input asp-for="RentDate" type="datetime-local" class="form-control" id="tglMulai" onchange="hitungSewa()" />
+                <span asp-validation-for="RentDate" class="text-danger"></span>
+            </div>
+
+            <!-- Tanggal Selesai -->
+            <div class="form-group mb-3">
+                <label asp-for="ReturnDate" class="control-label"></label>
+                <input asp-for="ReturnDate" type="datetime-local" class="form-control" id="tglSelesai" onchange="hitungSewa()" />
+                <span asp-validation-for="ReturnDate" class="text-danger"></span>
+            </div>
+
+            <!-- Lama Sewa -->
+            <div class="form-group mb-3">
+                <label asp-for="TotalDays" class="control-label"></label>
+                <input asp-for="TotalDays" class="form-control" readonly />
+                <span asp-validation-for="TotalDays" class="text-danger"></span>
+            </div>
+
+            <!-- Total Harga -->
+            <div class="form-group mb-3">
+                <label asp-for="TotalPrice" class="control-label"></label>
+                <input type="text" id="TotalPriceDisplay" class="form-control" readonly />  <!-- tampil -->
+                <input asp-for="TotalPrice" type="hidden" id="TotalPrice" />                <!-- dikirim -->
+                <span asp-validation-for="TotalPrice" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Ambil data harga mobil dari controller (dictionary Id => HargaPerHari)
+        const hargaMobil = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.PricePerDay ?? new Dictionary<int, decimal>()));
+
+        function updateHarga() {
+            hitungSewa();
+        }
+
+        function hitungSewa() {
+            const tglMulaiEl = document.getElementById("tglMulai");
+            const tglSelesaiEl = document.getElementById("tglSelesai");
+            const carSelectEl = document.getElementById("carSelect");
+
+            if (!tglMulaiEl || !tglSelesaiEl || !carSelectEl) return;
+
+            const tglMulai = new Date(tglMulaiEl.value);
+            const tglSelesai = new Date(tglSelesaiEl.value);
+            const carId = carSelectEl.value;
+
+            if (!tglMulai || !tglSelesai || !carId) return;
+
+            // validasi tanggal
+            if (tglSelesai <= tglMulai) {
+                alert("Tanggal selesai tidak boleh lebih awal dari tanggal mulai!");
+                tglSelesaiEl.value = "";
+                document.querySelector('input[name="TotalDays"]').value = "";
+                document.getElementById("TotalPriceDisplay").value = "";
+                document.getElementById("TotalPrice").value = "";
+                return;
+            }
+
+            // Hitung durasi
+            const selisihJam = (tglSelesai - tglMulai) / (1000 * 60 * 60);
+            let totalHari = Math.ceil(selisihJam / 24);
+            if (totalHari < 1) totalHari = 1;
+
+            // Update field lama sewa
+            const totalHariEl = document.querySelector('input[name="TotalDays"]');
+            if (totalHariEl) totalHariEl.value = totalHari;
+
+            // Hitung total harga
+            const hargaPerHari = hargaMobil[carId] || 0;
+            const totalHarga = hargaPerHari * totalHari;
+
+            // Update tampilan dan nilai asli
+            const totalHargaDisplay = document.getElementById("TotalPriceDisplay");
+            const totalHargaHidden = document.getElementById("TotalPrice");
+
+            if (totalHargaDisplay) totalHargaDisplay.value = totalHarga.toLocaleString('id-ID');
+            if (totalHargaHidden) totalHargaHidden.value = totalHarga;
+        }
+    </script>
+}

@@ -1,0 +1,56 @@
+﻿@model IEnumerable<CarRental.Models.Rental>
+
+@{
+    ViewData["Title"] = "List Sewa";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Mobil</th>
+            <th>Customer</th>
+            <th>Tanggal Rental</th>
+            <th>Tanggal Selesai</th>
+            <th>Tanggal Actual Pengembalian</th>
+            <th>Total Hari</th>
+            <th>Total Harga</th>
+            <th>Status</th>
+            <th>CreateAt</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>@item.Car?.Model</td>
+            <td>@item.UserPass?.Username</td>
+            <td>@item.RentDate</td>
+            <td>@item.ReturnDate</td>
+            <td>@item.ActualReturnDate</td>
+            <td>@item.TotalDays</td>
+            <td>@item.TotalPrice</td>
+            <td>@item.Status</td>
+            <td>@item.CreatedAt</td>
+            @if (Context.Session.GetString("Role") == "Admin")
+            {
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                    @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                    @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn sm">Detail</a>
+                    @if(item.Status == "Disewa")
+                    {
+                        <a asp-action="ReturnCar" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Kembalikan</a>        
+                    }
+                </td>
+                
+            }
+        </tr>
+}
+    </tbody>
+</table>
